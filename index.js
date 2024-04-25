@@ -49,24 +49,27 @@ function urlShortenerHandler(req, res) {
   // Get URL from request
   let { url } = req.body;
   url_parsed = url.split("//")[1] || null;
-  if (!url_parsed) { res.json({ 'error': 'invalid url' }); }
-  url_parsed = url_parsed.split("/")[0];
-  // Check if URL is valid
-  dns.lookup(url_parsed, (err) => {
-    if (err) {
-      res.json({ "error": "invalid url" });
-    } else {
-      const existingShortUrl = urlStore.getShortUrl(url);
-      if (existingShortUrl) {
-        res.json({ "original_url": url, "short_url": existingShortUrl });
+  if (!url_parsed) {
+    res.json({ 'error': 'invalid url' });
+  } else {
+    url_parsed = url_parsed.split("/")[0];
+    // Check if URL is valid
+    dns.lookup(url_parsed, (err) => {
+      if (err) {
+        res.json({ 'error': 'invalid url' });
       } else {
-        const short_url = urlStore.count + 1;
-        urlStore.add(short_url, url);
-        console.log(urlStore);
-        res.json({ "original_url": url, "short_url": short_url });
+        const existingShortUrl = urlStore.getShortUrl(url);
+        if (existingShortUrl) {
+          res.json({ 'original_url': url, 'short_url': existingShortUrl });
+        } else {
+          const short_url = urlStore.count + 1;
+          urlStore.add(short_url, url);
+          console.log(urlStore);
+          res.json({ 'original_url': url, 'short_url': short_url });
+        }
       }
-    }
-  });
+    });
+  }
 }
 
 function shortUrlHandler(req, res) {
