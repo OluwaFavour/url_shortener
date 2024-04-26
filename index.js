@@ -34,11 +34,15 @@ const urlStore = {
   count: 0,
   store: new Map(),
   reverseStore: new Map(),
+
+  // Method to add a new URL and its corresponding short URL to the store
   add(key, value) {
     this.store.set(`${key}`, value);
     this.reverseStore.set(value, `${key}`);
     this.count++;
   },
+
+  // Method to retrieve the short URL based on the original URL
   getShortUrl(value) {
     return this.reverseStore.get(value) || null;
   }
@@ -49,19 +53,26 @@ function urlShortenerHandler(req, res) {
   // Get URL from request
   let { url } = req.body;
   url_parsed = url.split("//")[1] || null;
+
   if (!url_parsed) {
+    // Invalid URL format
     res.json({ 'error': 'invalid url' });
   } else {
     url_parsed = url_parsed.split("/")[0];
+
     // Check if URL is valid
     dns.lookup(url_parsed, (err) => {
       if (err) {
+        // Invalid URL or DNS lookup error
         res.json({ 'error': 'invalid url' });
       } else {
         const existingShortUrl = urlStore.getShortUrl(url);
+
         if (existingShortUrl) {
+          // Short URL already exists in the store
           res.json({ 'original_url': url, 'short_url': existingShortUrl });
         } else {
+          // Generate a new short URL and add it to the store
           const short_url = urlStore.count + 1;
           urlStore.add(short_url, url);
           console.log(urlStore);
@@ -75,9 +86,12 @@ function urlShortenerHandler(req, res) {
 function shortUrlHandler(req, res) {
   let { short_url } = req.params;
   const originalUrl = urlStore.store.get(short_url) || null;
+
   if (originalUrl) {
+    // Redirect to the original URL
     res.redirect(originalUrl);
   } else {
+    // Short URL not found
     res.status(404).json({ error: 'Resource not found' });
   }
 }
