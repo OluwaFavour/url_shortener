@@ -58,10 +58,9 @@ function urlShortenerHandler(req, res) {
     // Invalid URL format
     res.json({ 'error': 'invalid url' });
   } else {
-    url_parsed = url_parsed.split("/")[0];
-
-    // Check if URL is valid
-    dns.lookup(url_parsed, (err) => {
+    // Get hostname from URL
+    const hostname = new URL(url).hostname;
+    dns.lookup(hostname, (err) => {
       if (err) {
         // Invalid URL or DNS lookup error
         res.json({ 'error': 'invalid url' });
